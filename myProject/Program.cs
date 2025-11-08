@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using myProject.dbContextNameSpace;
+using MyProject.AppDbContextNameSpace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,7 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddDbContext<dbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -13,8 +13,8 @@
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
-            "launchUrl": "dailyreport",
-            "applicationUrl": "http://10.80.249.36:5256",
+            "launchUrl": "api/dashboard",
+            "applicationUrl": "http://10.139.215.36:5256",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
@@ -24,8 +24,8 @@
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
-            "launchUrl": "dailyreport",
-            "applicationUrl": "http://10.80.249.36:7041;http://10.80.249.36:5256",
+            "launchUrl": "api/dashboard",
+            "applicationUrl": "http://10.139.215.36:7041;http://10.139.215.36:5256",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
@@ -34,7 +34,7 @@
         "IIS Express": {
             "commandName": "IISExpress",
             "launchBrowser": true,
-            "launchUrl": "dailyreport",
+            "launchUrl": "api/dashboard",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
