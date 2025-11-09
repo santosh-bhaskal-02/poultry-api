@@ -75,10 +75,19 @@ namespace MyProject.Controllers
                 });
             }
 
+            DateTime dateUtc;
+
+            if (dailyRecord.Date.Kind == DateTimeKind.Unspecified)
+                dateUtc = DateTime.SpecifyKind(dailyRecord.Date, DateTimeKind.Utc);
+            else if (dailyRecord.Date.Kind == DateTimeKind.Local)
+                dateUtc = dailyRecord.Date.ToUniversalTime();
+            else
+                dateUtc = dailyRecord.Date;
+
             var record = new DailyRecord
             {
                 BatchNo = batchNo,
-                Date = dailyRecord.Date,
+                Date = dateUtc,
                 BirdAgeInDays = dailyRecord.BirdAgeInDays,
                 FeedConsumedBags = dailyRecord.FeedConsumedBags,
                 MortalityCount = dailyRecord.MortalityCount,
@@ -101,10 +110,19 @@ namespace MyProject.Controllers
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid ID" });
 
+            DateTime dateUtc;
+
+            if (updatedRecord.Date.Kind == DateTimeKind.Unspecified)
+                dateUtc = DateTime.SpecifyKind(updatedRecord.Date, DateTimeKind.Utc);
+            else if (updatedRecord.Date.Kind == DateTimeKind.Local)
+                dateUtc = updatedRecord.Date.ToUniversalTime();
+            else
+                dateUtc = updatedRecord.Date;
+
             var updatedCount = _dbContext.DailyRecord
                 .Where(x => x.Id == id && x.IsDeleted == false)
                 .ExecuteUpdate(setter => setter
-                    .SetProperty(x => x.Date, updatedRecord.Date)
+                    .SetProperty(x => x.Date, dateUtc)
                     .SetProperty(x => x.BirdAgeInDays, updatedRecord.BirdAgeInDays)
                     .SetProperty(x => x.FeedConsumedBags, updatedRecord.FeedConsumedBags)
                     .SetProperty(x => x.MortalityCount, updatedRecord.MortalityCount)

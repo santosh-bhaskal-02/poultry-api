@@ -51,10 +51,19 @@ namespace MyProject.Controllers
             if (batchNo == 0)
                 return BadRequest(new { Message = "No active batch found." });
 
+            DateTime dateUtc;
+
+            if (feedInventory.Date.Kind == DateTimeKind.Unspecified)
+                dateUtc = DateTime.SpecifyKind(feedInventory.Date, DateTimeKind.Utc);
+            else if (feedInventory.Date.Kind == DateTimeKind.Local)
+                dateUtc = feedInventory.Date.ToUniversalTime();
+            else
+                dateUtc = feedInventory.Date;
+
             var record = new FeedInventory
             {
                 BatchNo = batchNo,
-                Date = feedInventory.Date,
+                Date = dateUtc,
                 FeedName = feedInventory.FeedName,
                 BagsArrivedCount = feedInventory.BagsArrivedCount,
                 DriverName = feedInventory.DriverName,
@@ -80,10 +89,19 @@ namespace MyProject.Controllers
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid ID" });
 
+            DateTime dateUtc;
+
+            if (feedInventory.Date.Kind == DateTimeKind.Unspecified)
+                dateUtc = DateTime.SpecifyKind(feedInventory.Date, DateTimeKind.Utc);
+            else if (feedInventory.Date.Kind == DateTimeKind.Local)
+                dateUtc = feedInventory.Date.ToUniversalTime();
+            else
+                dateUtc = feedInventory.Date;
+
             var updatedCount = _dbContext.FeedInventory
                 .Where(x => x.Id == id && x.IsDeleted == false)
                 .ExecuteUpdate(setter => setter
-                    .SetProperty(x => x.Date, feedInventory.Date)
+                    .SetProperty(x => x.Date, dateUtc)
                     .SetProperty(x => x.FeedName, feedInventory.FeedName)
                     .SetProperty(x => x.BagsArrivedCount, feedInventory.BagsArrivedCount)
                     .SetProperty(x => x.DriverName, feedInventory.DriverName)

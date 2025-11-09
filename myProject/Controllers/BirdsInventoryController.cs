@@ -37,9 +37,18 @@ namespace MyProject.Controllers
             if (birdInventory == null)
                 return BadRequest(new { Message = "Invalid payload" });
 
+            DateTime dateUtc;
+
+            if (birdInventory.Date.Kind == DateTimeKind.Unspecified)
+                dateUtc = DateTime.SpecifyKind(birdInventory.Date, DateTimeKind.Utc);
+            else if (birdInventory.Date.Kind == DateTimeKind.Local)
+                dateUtc = birdInventory.Date.ToUniversalTime();
+            else
+                dateUtc = birdInventory.Date;
+
             var newInventory = new BirdInventory
             {
-                Date = birdInventory.Date,
+                Date = dateUtc,
                 BatchNo = birdInventory.BatchNo,
                 BoxCount = birdInventory.BoxCount,
                 BirdsPerBoxCount = birdInventory.BirdsPerBoxCount,
@@ -66,10 +75,19 @@ namespace MyProject.Controllers
         [HttpPut("{id}")]
         public IActionResult Update([FromRoute] int id, [FromBody] BirdInventory birdInventory)
         {
+            DateTime dateUtc;
+
+            if (birdInventory.Date.Kind == DateTimeKind.Unspecified)
+                dateUtc = DateTime.SpecifyKind(birdInventory.Date, DateTimeKind.Utc);
+            else if (birdInventory.Date.Kind == DateTimeKind.Local)
+                dateUtc = birdInventory.Date.ToUniversalTime();
+            else
+                dateUtc = birdInventory.Date;
+
             var updatedRows = _dbContext.BirdInventory
                 .Where(x => x.Id == id && x.IsDeleted == false)
                 .ExecuteUpdate(setters => setters
-                    .SetProperty(x => x.Date, birdInventory.Date)
+                    .SetProperty(x => x.Date, dateUtc)
                     .SetProperty(x => x.BatchNo, birdInventory.BatchNo)
                     .SetProperty(x => x.BoxCount, birdInventory.BoxCount)
                     .SetProperty(x => x.BirdsPerBoxCount, birdInventory.BirdsPerBoxCount)
