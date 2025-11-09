@@ -20,8 +20,14 @@ namespace MyProject.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
+            var batchNo = _dbContext.BirdInventory
+             .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
+             .OrderByDescending(x => x.Id)
+             .Select(x => x.BatchNo)
+             .FirstOrDefault();
+
             var records = _dbContext.DailyRecord
-                .Where(x => x.IsDeleted == false)
+                .Where(x =>x.BatchNo==batchNo &&  x.IsDeleted == false)
                 .OrderByDescending(x => x.Date)
                 .ToList();
 
@@ -37,7 +43,7 @@ namespace MyProject.Controllers
             var batchNo = _dbContext.BirdInventory
                 .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
                 .OrderByDescending(x => x.Id)
-                .Select(x => x.Id)
+                .Select(x => x.BatchNo)
                 .FirstOrDefault();
 
             if (batchNo == 0)
@@ -47,12 +53,25 @@ namespace MyProject.Controllers
                 .Where(x => x.BatchNo == batchNo && x.IsDeleted == false)
                 .Sum(x => x.BagsArrivedCount);
 
+            var birdBalance = _dbContext.BirdInventory
+                 .Where(x => x.BatchNo == batchNo && x.IsDeleted == false)
+                 .Sum(x => x.HousedBirdCount);
+
             if (feedBalance < dailyRecord.FeedConsumedBags)
             {
                 return BadRequest(new
                 {
                     Message = "Not enough feed bags available.",
                     FeedBalance = feedBalance
+                });
+            }
+
+            if (birdBalance < dailyRecord.MortalityCount)
+            {
+                return BadRequest(new
+                {
+                    Message = "Mortality count can't be greater than ttotal birds.",
+                    birdBalance = birdBalance
                 });
             }
 
@@ -90,6 +109,7 @@ namespace MyProject.Controllers
                     .SetProperty(x => x.FeedConsumedBags, updatedRecord.FeedConsumedBags)
                     .SetProperty(x => x.MortalityCount, updatedRecord.MortalityCount)
                 );
+
 
             if (updatedCount == 0)
                 return NotFound(new { Message = "Record not found or already deleted." });

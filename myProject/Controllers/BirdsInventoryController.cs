@@ -33,14 +33,14 @@ namespace MyProject.Controllers
         public IActionResult Create([FromBody] BirdInventory birdInventory)
         {
 
-            Console.WriteLine("birdInventoru"+ birdInventory.BatchNo);
+            Console.WriteLine("birdInventory" + birdInventory.BatchNo);
             if (birdInventory == null)
                 return BadRequest(new { Message = "Invalid payload" });
 
             var newInventory = new BirdInventory
             {
                 Date = birdInventory.Date,
-                BatchNo =birdInventory.BatchNo,
+                BatchNo = birdInventory.BatchNo,
                 BoxCount = birdInventory.BoxCount,
                 BirdsPerBoxCount = birdInventory.BirdsPerBoxCount,
                 TotalBirdCount = birdInventory.TotalBirdCount,
@@ -63,8 +63,8 @@ namespace MyProject.Controllers
             });
         }
 
-        [HttpPut]
-        public IActionResult Update([FromQuery] int id, [FromBody] BirdInventory birdInventory)
+        [HttpPut("{id}")]
+        public IActionResult Update([FromRoute] int id, [FromBody] BirdInventory birdInventory)
         {
             var updatedRows = _dbContext.BirdInventory
                 .Where(x => x.Id == id && x.IsDeleted == false)
@@ -90,8 +90,8 @@ namespace MyProject.Controllers
 
 
 
-        [HttpPatch("soft-delete")]
-        public IActionResult SoftDelete([FromQuery] int id)
+        [HttpPatch("soft-delete/{id}")]
+        public IActionResult SoftDelete([FromRoute] int id)
         {
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid ID" });

@@ -19,20 +19,20 @@ namespace MyProject.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var latestBatch = _DbContext.BirdInventory.OrderByDescending(x => x.Id).Select(x => new { x.Id, x.HousedBirdCount }).FirstOrDefault();
+            var latestBatch = _DbContext.BirdInventory.OrderByDescending(x => x.Id).Select(x => new { x.BatchNo, x.HousedBirdCount }).FirstOrDefault();
 
             if(latestBatch == null)
             {
                 return NotFound(new { Message = "No active batch found." });
             }
 
-            var TotalMortality = _DbContext.DailyRecord.Where(x=>x.BatchNo== latestBatch.Id).Sum(x=>(int?)x.MortalityCount)??0;
+            var TotalMortality = _DbContext.DailyRecord.Where(x=>x.BatchNo== latestBatch.BatchNo).Sum(x=>(int?)x.MortalityCount)??0;
 
             var TotalAliveBirds = latestBatch?.HousedBirdCount - TotalMortality;
 
-            var TotalFeedConsume = _DbContext.DailyRecord.Where(x => x.BatchNo == latestBatch.Id).Sum(x => (int?)x.FeedConsumedBags) ?? 0;
+            var TotalFeedConsume = _DbContext.DailyRecord.Where(x => x.BatchNo == latestBatch.BatchNo).Sum(x => (int?)x.FeedConsumedBags) ?? 0;
 
-            var TotalFeedBags = _DbContext.FeedInventory.Where(x => x.Id == latestBatch.Id).Sum(x=> (int?)x.BagsArrivedCount) ?? 0;
+            var TotalFeedBags = _DbContext.FeedInventory.Where(x => x.BatchNo == latestBatch.BatchNo).Sum(x=> (int?)x.BagsArrivedCount) ?? 0;
 
             var TotalFeedBagsAvailable = TotalFeedBags - TotalFeedConsume;
 

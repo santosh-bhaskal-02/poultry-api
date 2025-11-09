@@ -21,8 +21,14 @@ namespace MyProject.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
+            var batchNo = _dbContext.BirdInventory
+              .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
+              .OrderByDescending(x => x.Id)
+              .Select(x => x.BatchNo)
+              .FirstOrDefault();
+
             var inventory = _dbContext.FeedInventory
-                .Where(x => x.IsDeleted == false)
+                .Where(x => x.IsDeleted == false && x.BatchNo == batchNo)
                 .OrderByDescending(x => x.Date)
                 .ToList();
 
