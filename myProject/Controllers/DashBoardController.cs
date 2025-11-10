@@ -30,13 +30,13 @@ namespace MyProject.Controllers
                 return NotFound(new { Message = "No active batch found." });
             }
 
-            var TotalMortality = _DbContext.DailyRecord.Where(x=>x.BatchNo== latestBatch.BatchNo).Sum(x=>(int?)x.MortalityCount)??0;
+            var TotalMortality = _DbContext.DailyRecord.Where(x=>x.BatchNo== latestBatch.BatchNo &&  x.IsDeleted == false).Sum(x=>(int?)x.MortalityCount)??0;
 
             var TotalAliveBirds = latestBatch?.HousedBirdCount - TotalMortality;
 
-            var TotalFeedConsume = _DbContext.DailyRecord.Where(x => x.BatchNo == latestBatch.BatchNo).Sum(x => (int?)x.FeedConsumedBags) ?? 0;
+            var TotalFeedConsume = _DbContext.DailyRecord.Where(x => x.BatchNo == latestBatch.BatchNo && x.IsDeleted == false).Sum(x => (int?)x.FeedConsumedBags) ?? 0;
 
-            var TotalFeedBags = _DbContext.FeedInventory.Where(x => x.BatchNo == latestBatch.BatchNo).Sum(x=> (int?)x.BagsArrivedCount) ?? 0;
+            var TotalFeedBags = _DbContext.FeedInventory.Where(x => x.BatchNo == latestBatch.BatchNo &&  x.IsDeleted == false).Sum(x=> (int?)x.BagsArrivedCount) ?? 0;
 
             var TotalFeedBagsAvailable = TotalFeedBags - TotalFeedConsume;
 
