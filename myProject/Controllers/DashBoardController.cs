@@ -19,9 +19,13 @@ namespace MyProject.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var latestBatch = _DbContext.BirdInventory.OrderByDescending(x => x.Id).Select(x => new { x.BatchNo, x.HousedBirdCount }).FirstOrDefault();
+            var latestBatch = _DbContext.BirdInventory
+                .Where(x => x.IsDeleted == false && x.Status == Models.BatchStatus.Ongoing)
+                .OrderByDescending(x => x.Id)
+                .Select(x => new { x.BatchNo, x.HousedBirdCount })
+                .FirstOrDefault();
 
-            if(latestBatch == null)
+            if (latestBatch == null)
             {
                 return NotFound(new { Message = "No active batch found." });
             }
