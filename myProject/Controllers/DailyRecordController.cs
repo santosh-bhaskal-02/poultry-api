@@ -32,6 +32,7 @@ namespace MyProject.Controllers
 
 
             var records = _dbContext.DailyRecord
+                 .AsNoTracking()
                 .Where(x =>x.BatchId== batchId &&  x.IsDeleted == false)
                 .OrderByDescending(x => x.Date)
                 .ToList();
@@ -102,7 +103,7 @@ namespace MyProject.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update([FromRoute] int id, [FromBody] DailyRecord updatedRecord)
+        public IActionResult Update([FromRoute] int id, [FromBody] DailyRecordUpdateRequest updatedRecord)
         {
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid ID" });
