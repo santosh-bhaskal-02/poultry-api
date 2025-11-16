@@ -1,14 +1,9 @@
-﻿using MyProject.Models;
-
-namespace MyProject.Models
+﻿
+namespace MyProject.DTOs.FeedInventory
 {
-    public class FeedInventory
+    public class FeedInventoryRequest
     {
         public int Id { get; set; }
-
-        public int BatchId { get; set; }
-        public Batch Batch { get; set; }
-
         public DateTime Date { get; set; }
         public string FeedName { get; set; } = string.Empty;
         public int BagsArrivedCount { get; set; }
@@ -17,5 +12,4 @@ namespace MyProject.Models
 
         public bool? IsDeleted { get; set; } = false;
     }
-
 }

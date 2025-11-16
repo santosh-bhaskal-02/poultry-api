@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyProject.AppDbContextNameSpace;
+using MyProject.Models;
 
 namespace MyProject.Controllers
 {
@@ -17,30 +18,55 @@ namespace MyProject.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+ 
+        public IActionResult GetDashboard()
         {
-            var latestBatch = _DbContext.BirdInventory
-                .Where(x => x.IsDeleted == false && x.Status == Models.BatchStatus.Ongoing)
-                .OrderByDescending(x => x.Id)
-                .Select(x => new { x.BatchNo, x.HousedBirdCount })
+            var latestBatch = _DbContext.Batch
+                .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
                 .FirstOrDefault();
 
             if (latestBatch == null)
-            {
                 return NotFound(new { Message = "No active batch found." });
-            }
 
-            var TotalMortality = _DbContext.DailyRecord.Where(x=>x.BatchNo== latestBatch.BatchNo &&  x.IsDeleted == false).Sum(x=>(int?)x.MortalityCount)??0;
+            int batchId = latestBatch.Id;
 
-            var TotalAliveBirds = latestBatch?.HousedBirdCount - TotalMortality;
+            var birdInventory = _DbContext.BirdInventory
+                .FirstOrDefault(x => x.BatchId == batchId && x.IsDeleted == false);
 
-            var TotalFeedConsume = _DbContext.DailyRecord.Where(x => x.BatchNo == latestBatch.BatchNo && x.IsDeleted == false).Sum(x => (int?)x.FeedConsumedBags) ?? 0;
+            if (birdInventory == null)
+                return BadRequest(new { Message = "Bird arrival not yet recorded for this batch." });
 
-            var TotalFeedBags = _DbContext.FeedInventory.Where(x => x.BatchNo == latestBatch.BatchNo &&  x.IsDeleted == false).Sum(x=> (int?)x.BagsArrivedCount) ?? 0;
+            int housedBirds = birdInventory.HousedBirdCount;
 
-            var TotalFeedBagsAvailable = TotalFeedBags - TotalFeedConsume;
+            int totalMortality = _DbContext.DailyRecord
+                .Where(x => x.BatchId == batchId && x.IsDeleted == false)
+                .Sum(x => (int?)x.MortalityCount) ?? 0;
 
-            return Ok(new { Message = "Dashboard fetched successfully", Data =new { TotalMortality, TotalAliveBirds, TotalFeedConsume, TotalFeedBags, TotalFeedBagsAvailable } });
+            int totalAliveBirds = housedBirds - totalMortality;
+
+            int totalFeedConsume = _DbContext.DailyRecord
+                .Where(x => x.BatchId == batchId && x.IsDeleted == false)
+                .Sum(x => (int?)x.FeedConsumedBags) ?? 0;
+
+            int totalFeedBags = _DbContext.FeedInventory
+                .Where(x => x.BatchId == batchId && x.IsDeleted == false)
+                .Sum(x => (int?)x.BagsArrivedCount) ?? 0;
+
+            int totalFeedBagsAvailable = totalFeedBags - totalFeedConsume;
+
+            return Ok(new
+            {
+                Message = "Dashboard fetched successfully",
+                Data = new
+                {
+                    TotalMortality = totalMortality,
+                    TotalAliveBirds = totalAliveBirds,
+                    TotalFeedConsume = totalFeedConsume,
+                    TotalFeedBags = totalFeedBags,
+                    TotalFeedBagsAvailable = totalFeedBagsAvailable
+                }
+            });
         }
+
     }
 }

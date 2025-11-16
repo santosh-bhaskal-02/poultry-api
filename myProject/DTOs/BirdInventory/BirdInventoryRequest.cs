@@ -1,17 +1,9 @@
-﻿using MyProject.Models;
-
-namespace MyProject.Models
+﻿namespace MyProject.DTOs.BirdInventory
 {
- 
- 
-
-    public class BirdInventory
+    public class BirdInventoryRequest
     {
-        public int Id { get; set; }
-
         public int BatchId { get; set; }
-        public Batch Batch { get; set; }
-
+        public int BatchNo { get; set; }
         public DateTime Date { get; set; }
         public int BoxCount { get; set; }
         public int BirdsPerBoxCount { get; set; }
@@ -23,9 +15,5 @@ namespace MyProject.Models
         public int ShortBirdCount { get; set; }
         public int ExcessBirdCount { get; set; }
         public int HousedBirdCount { get; set; }
-
-        public bool? IsDeleted { get; set; } = false;
     }
-
-
 }

@@ -1,13 +1,11 @@
-﻿using MyProject.Models;
-
-namespace MyProject.Models
+﻿
+namespace MyProject.DTOs.DailyRecord
 {
-    public class DailyRecord
+    public class DailyRecordRequest
     {
         public int Id { get; set; }
 
-        public int BatchId { get; set; }
-        public Batch Batch { get; set; }
+     
 
         public DateTime Date { get; set; }
         public int BirdAgeInDays { get; set; }
@@ -16,5 +14,4 @@ namespace MyProject.Models
 
         public bool? IsDeleted { get; set; } = false;
     }
-
 }

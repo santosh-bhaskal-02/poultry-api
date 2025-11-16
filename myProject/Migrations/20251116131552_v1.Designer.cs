@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyProject.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251109203144_v1")]
+    [Migration("20251116131552_v1")]
     partial class v1
     {
         /// <inheritdoc />
@@ -20,10 +20,38 @@ namespace MyProject.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("MyProject.Models.Batch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatchNo")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tbl_batch", (string)null);
+                });
 
             modelBuilder.Entity("MyProject.Models.BirdInventory", b =>
                 {
@@ -33,7 +61,7 @@ namespace MyProject.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BatchNo")
+                    b.Property<int>("BatchId")
                         .HasColumnType("integer");
 
                     b.Property<int>("BirdsArrivedCount")
@@ -63,7 +91,7 @@ namespace MyProject.Migrations
                     b.Property<bool?>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Status")
+                    b.Property<int>("ShortBirdCount")
                         .HasColumnType("integer");
 
                     b.Property<int>("TotalBirdCount")
@@ -74,7 +102,7 @@ namespace MyProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BatchNo")
+                    b.HasIndex("BatchId")
                         .IsUnique();
 
                     b.ToTable("tbl_birdInventory", (string)null);
@@ -88,7 +116,7 @@ namespace MyProject.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BatchNo")
+                    b.Property<int>("BatchId")
                         .HasColumnType("integer");
 
                     b.Property<int>("BirdAgeInDays")
@@ -108,7 +136,7 @@ namespace MyProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BatchNo");
+                    b.HasIndex("BatchId");
 
                     b.ToTable("tbl_dailyRegister", (string)null);
                 });
@@ -124,7 +152,7 @@ namespace MyProject.Migrations
                     b.Property<int>("BagsArrivedCount")
                         .HasColumnType("integer");
 
-                    b.Property<int>("BatchNo")
+                    b.Property<int>("BatchId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("Date")
@@ -147,37 +175,48 @@ namespace MyProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BatchNo");
+                    b.HasIndex("BatchId");
 
                     b.ToTable("tbl_feedInventory", (string)null);
                 });
 
-            modelBuilder.Entity("MyProject.Models.DailyRecord", b =>
+            modelBuilder.Entity("MyProject.Models.BirdInventory", b =>
                 {
-                    b.HasOne("MyProject.Models.BirdInventory", "BirdInventory")
-                        .WithMany("DailyRecords")
-                        .HasForeignKey("BatchNo")
-                        .HasPrincipalKey("BatchNo")
+                    b.HasOne("MyProject.Models.Batch", "Batch")
+                        .WithOne("BirdInventory")
+                        .HasForeignKey("MyProject.Models.BirdInventory", "BatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BirdInventory");
+                    b.Navigation("Batch");
+                });
+
+            modelBuilder.Entity("MyProject.Models.DailyRecord", b =>
+                {
+                    b.HasOne("MyProject.Models.Batch", "Batch")
+                        .WithMany("DailyRecords")
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Batch");
                 });
 
             modelBuilder.Entity("MyProject.Models.FeedInventory", b =>
                 {
-                    b.HasOne("MyProject.Models.BirdInventory", "BirdInventory")
+                    b.HasOne("MyProject.Models.Batch", "Batch")
                         .WithMany("FeedInventories")
-                        .HasForeignKey("BatchNo")
-                        .HasPrincipalKey("BatchNo")
+                        .HasForeignKey("BatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BirdInventory");
+                    b.Navigation("Batch");
                 });
 
-            modelBuilder.Entity("MyProject.Models.BirdInventory", b =>
+            modelBuilder.Entity("MyProject.Models.Batch", b =>
                 {
+                    b.Navigation("BirdInventory");
+
                     b.Navigation("DailyRecords");
 
                     b.Navigation("FeedInventories");

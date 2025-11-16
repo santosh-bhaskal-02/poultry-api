@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using MyProject;
 using MyProject.AppDbContextNameSpace;
+using MyProject.DTOs.DailyRecord;
 using MyProject.Models;
+using MyProject.Utilities;
 
 namespace MyProject.Controllers
 {
@@ -20,41 +22,43 @@ namespace MyProject.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var batchNo = _dbContext.BirdInventory
+            var batchId = _dbContext.Batch
              .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
-             .OrderByDescending(x => x.Id)
-             .Select(x => x.BatchNo)
+             .Select(x => x.Id)
              .FirstOrDefault();
 
+            if (batchId == 0)
+                return Ok(new { Message = "No active batch found.", Data = new List<DailyRecord>() });
+
+
             var records = _dbContext.DailyRecord
-                .Where(x =>x.BatchNo==batchNo &&  x.IsDeleted == false)
+                .Where(x =>x.BatchId== batchId &&  x.IsDeleted == false)
                 .OrderByDescending(x => x.Date)
                 .ToList();
 
-            return Ok(new {Message="Daily records fetched successfully", data = records });
+            return Ok(new {Message="Daily records fetched successfully", Data = records });
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] DailyRecord dailyRecord)
+        public IActionResult Create([FromBody] DailyRecordRequest dailyRecord)
         {
             if (dailyRecord == null)
                 return BadRequest(new { Message = "Invalid request data." });
 
-            var batchNo = _dbContext.BirdInventory
+            var batchId = _dbContext.Batch
                 .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
-                .OrderByDescending(x => x.Id)
-                .Select(x => x.BatchNo)
+                .Select(x => x.Id)
                 .FirstOrDefault();
 
-            if (batchNo == 0)
+            if (batchId == 0)
                 return BadRequest(new { Message = "No active batch found." });
 
             var feedBalance = _dbContext.FeedInventory
-                .Where(x => x.BatchNo == batchNo && x.IsDeleted == false)
+                .Where(x => x.BatchId == batchId && x.IsDeleted == false)
                 .Sum(x => x.BagsArrivedCount);
 
             var birdBalance = _dbContext.BirdInventory
-                 .Where(x => x.BatchNo == batchNo && x.IsDeleted == false)
+                 .Where(x => x.BatchId == batchId && x.IsDeleted == false)
                  .Sum(x => x.HousedBirdCount);
 
             if (feedBalance < dailyRecord.FeedConsumedBags)
@@ -75,19 +79,12 @@ namespace MyProject.Controllers
                 });
             }
 
-            DateTime dateUtc;
-
-            if (dailyRecord.Date.Kind == DateTimeKind.Unspecified)
-                dateUtc = DateTime.SpecifyKind(dailyRecord.Date, DateTimeKind.Utc);
-            else if (dailyRecord.Date.Kind == DateTimeKind.Local)
-                dateUtc = dailyRecord.Date.ToUniversalTime();
-            else
-                dateUtc = dailyRecord.Date;
+             dailyRecord.Date =  DateTimeHelper.NormalizeToUtc(dailyRecord.Date);
 
             var record = new DailyRecord
             {
-                BatchNo = batchNo,
-                Date = dateUtc,
+                BatchId = batchId,
+                Date = dailyRecord.Date,
                 BirdAgeInDays = dailyRecord.BirdAgeInDays,
                 FeedConsumedBags = dailyRecord.FeedConsumedBags,
                 MortalityCount = dailyRecord.MortalityCount,
@@ -110,19 +107,12 @@ namespace MyProject.Controllers
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid ID" });
 
-            DateTime dateUtc;
-
-            if (updatedRecord.Date.Kind == DateTimeKind.Unspecified)
-                dateUtc = DateTime.SpecifyKind(updatedRecord.Date, DateTimeKind.Utc);
-            else if (updatedRecord.Date.Kind == DateTimeKind.Local)
-                dateUtc = updatedRecord.Date.ToUniversalTime();
-            else
-                dateUtc = updatedRecord.Date;
+            updatedRecord.Date = DateTimeHelper.NormalizeToUtc(updatedRecord.Date);
 
             var updatedCount = _dbContext.DailyRecord
                 .Where(x => x.Id == id && x.IsDeleted == false)
                 .ExecuteUpdate(setter => setter
-                    .SetProperty(x => x.Date, dateUtc)
+                    .SetProperty(x => x.Date, updatedRecord.Date)
                     .SetProperty(x => x.BirdAgeInDays, updatedRecord.BirdAgeInDays)
                     .SetProperty(x => x.FeedConsumedBags, updatedRecord.FeedConsumedBags)
                     .SetProperty(x => x.MortalityCount, updatedRecord.MortalityCount)

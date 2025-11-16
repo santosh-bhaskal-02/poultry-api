@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyProject.AppDbContextNameSpace;
+using MyProject.DTOs.FeedInventory;
 using MyProject.Models;
+using MyProject.Utilities;
 
 namespace MyProject.Controllers
 {
@@ -21,14 +23,13 @@ namespace MyProject.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var batchNo = _dbContext.BirdInventory
+            var batchId = _dbContext.Batch
               .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
-              .OrderByDescending(x => x.Id)
-              .Select(x => x.BatchNo)
+              .Select(x => x.Id)
               .FirstOrDefault();
 
             var inventory = _dbContext.FeedInventory
-                .Where(x => x.IsDeleted == false && x.BatchNo == batchNo)
+                .Where(x => x.IsDeleted == false && x.BatchId == batchId)
                 .OrderByDescending(x => x.Date)
                 .ToList();
 
@@ -36,34 +37,27 @@ namespace MyProject.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] FeedInventory feedInventory)
+        public IActionResult Create([FromBody] FeedInventoryRequest feedInventory)
         {
             Console.WriteLine("bags", feedInventory.BagsArrivedCount);
             if (feedInventory == null)
                 return BadRequest(new { Message = "Invalid request data." });
 
-            var batchNo = _dbContext.BirdInventory
-                .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
-                .OrderByDescending(x => x.Id)
-                .Select(x => x.BatchNo)
+            var batchId = _dbContext.Batch
+                .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing && x.IsDeleted==false)     
+                .Select(x => x.Id)
                 .FirstOrDefault();
 
-            if (batchNo == 0)
+            if (batchId == 0)
                 return BadRequest(new { Message = "No active batch found." });
 
-            DateTime dateUtc;
+            feedInventory.Date = DateTimeHelper.NormalizeToUtc(feedInventory.Date);
 
-            if (feedInventory.Date.Kind == DateTimeKind.Unspecified)
-                dateUtc = DateTime.SpecifyKind(feedInventory.Date, DateTimeKind.Utc);
-            else if (feedInventory.Date.Kind == DateTimeKind.Local)
-                dateUtc = feedInventory.Date.ToUniversalTime();
-            else
-                dateUtc = feedInventory.Date;
 
             var record = new FeedInventory
             {
-                BatchNo = batchNo,
-                Date = dateUtc,
+                BatchId = batchId,
+                Date = feedInventory.Date,
                 FeedName = feedInventory.FeedName,
                 BagsArrivedCount = feedInventory.BagsArrivedCount,
                 DriverName = feedInventory.DriverName,
@@ -74,7 +68,8 @@ namespace MyProject.Controllers
             _dbContext.FeedInventory.Add(record);
             _dbContext.SaveChanges();
 
-            _logger.LogInformation("Feed inventory record created successfully for batch {BatchId}", batchNo);
+            _logger.LogInformation("Feed inventory record created successfully for batch {BatchId}", batchId);
+
 
             return Ok(new
             {
@@ -89,19 +84,13 @@ namespace MyProject.Controllers
             if (id <= 0)
                 return BadRequest(new { Message = "Invalid ID" });
 
-            DateTime dateUtc;
+            feedInventory.Date = DateTimeHelper.NormalizeToUtc(feedInventory.Date);
 
-            if (feedInventory.Date.Kind == DateTimeKind.Unspecified)
-                dateUtc = DateTime.SpecifyKind(feedInventory.Date, DateTimeKind.Utc);
-            else if (feedInventory.Date.Kind == DateTimeKind.Local)
-                dateUtc = feedInventory.Date.ToUniversalTime();
-            else
-                dateUtc = feedInventory.Date;
 
             var updatedCount = _dbContext.FeedInventory
                 .Where(x => x.Id == id && x.IsDeleted == false)
                 .ExecuteUpdate(setter => setter
-                    .SetProperty(x => x.Date, dateUtc)
+                    .SetProperty(x => x.Date, feedInventory.Date)
                     .SetProperty(x => x.FeedName, feedInventory.FeedName)
                     .SetProperty(x => x.BagsArrivedCount, feedInventory.BagsArrivedCount)
                     .SetProperty(x => x.DriverName, feedInventory.DriverName)

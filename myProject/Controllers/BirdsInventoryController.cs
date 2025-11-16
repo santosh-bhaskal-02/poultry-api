@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyProject.AppDbContextNameSpace;
+using MyProject.DTOs.BirdInventory;
 using MyProject.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using MyProject.Utilities;
+
 
 namespace MyProject.Controllers
 {
@@ -28,28 +31,50 @@ namespace MyProject.Controllers
             return Ok(new { Message = "Bird inventories fetched successfully", data = inventories });
         }
 
+        [HttpGet("{id}")]
+        public IActionResult GetByBatch(int id)
+        {
+            var inv = _dbContext.BirdInventory
+                .FirstOrDefault(x => x.BatchId == id && x.IsDeleted == false);
+
+            if (inv == null) return NotFound("No bird inventory found.");
+
+            return Ok(new { Message = "Bird Inventory found successfully", Data = inv });
+        }
+
+
 
         [HttpPost]
-        public IActionResult Create([FromBody] BirdInventory birdInventory)
+        public IActionResult Create([FromBody] BirdInventoryRequest birdInventory)
         {
+            if (birdInventory == null )
+                return BadRequest("Invalid request.");
 
-            Console.WriteLine("birdInventory" + birdInventory.BatchNo);
-            if (birdInventory == null)
-                return BadRequest(new { Message = "Invalid payload" });
+        
+            bool existingBatch = _dbContext.Batch.Any(b => b.Status == BatchStatus.Ongoing);
+            if (existingBatch)
+                return BadRequest("Another batch is already active. Close it before starting a new batch.");
 
-            DateTime dateUtc;
+            var batch = new Batch
+            {
+                BatchNo = birdInventory.BatchNo,
+                StartDate = DateTime.UtcNow,
+                Status = BatchStatus.Ongoing,
+                IsDeleted = false
+            };
 
-            if (birdInventory.Date.Kind == DateTimeKind.Unspecified)
-                dateUtc = DateTime.SpecifyKind(birdInventory.Date, DateTimeKind.Utc);
-            else if (birdInventory.Date.Kind == DateTimeKind.Local)
-                dateUtc = birdInventory.Date.ToUniversalTime();
-            else
-                dateUtc = birdInventory.Date;
+            _dbContext.Batch.Add(batch);
+            _dbContext.SaveChanges(); 
+
+           
+            birdInventory.Date = DateTimeHelper.NormalizeToUtc(birdInventory.Date);
+            birdInventory.BatchId = batch.Id;
+
 
             var newInventory = new BirdInventory
             {
-                Date = dateUtc,
-                BatchNo = birdInventory.BatchNo,
+                Date = birdInventory.Date,
+                BatchId = birdInventory.BatchId,
                 BoxCount = birdInventory.BoxCount,
                 BirdsPerBoxCount = birdInventory.BirdsPerBoxCount,
                 TotalBirdCount = birdInventory.TotalBirdCount,
@@ -57,9 +82,9 @@ namespace MyProject.Controllers
                 BoxMortalityCount = birdInventory.BoxMortalityCount,
                 DisabledBirdCount = birdInventory.DisabledBirdCount,
                 WeakBirdCount = birdInventory.WeakBirdCount,
+                ShortBirdCount = birdInventory.ShortBirdCount,
                 ExcessBirdCount = birdInventory.ExcessBirdCount,
                 HousedBirdCount = birdInventory.HousedBirdCount,
-                Status = birdInventory.Status
             };
 
             _dbContext.BirdInventory.Add(newInventory);
@@ -68,27 +93,28 @@ namespace MyProject.Controllers
             return Ok(new
             {
                 Message = "Record created successfully",
-                Data = newInventory
+                Data = new
+                {
+                    newInventory.Id,
+                    newInventory.BatchId,
+                    newInventory.Date,
+                    newInventory.HousedBirdCount,
+                    newInventory.TotalBirdCount
+                }
             });
         }
 
         [HttpPut("{id}")]
         public IActionResult Update([FromRoute] int id, [FromBody] BirdInventory birdInventory)
         {
-            DateTime dateUtc;
+            birdInventory.Date = DateTimeHelper.NormalizeToUtc(birdInventory.Date);
 
-            if (birdInventory.Date.Kind == DateTimeKind.Unspecified)
-                dateUtc = DateTime.SpecifyKind(birdInventory.Date, DateTimeKind.Utc);
-            else if (birdInventory.Date.Kind == DateTimeKind.Local)
-                dateUtc = birdInventory.Date.ToUniversalTime();
-            else
-                dateUtc = birdInventory.Date;
 
             var updatedRows = _dbContext.BirdInventory
                 .Where(x => x.Id == id && x.IsDeleted == false)
                 .ExecuteUpdate(setters => setters
-                    .SetProperty(x => x.Date, dateUtc)
-                    .SetProperty(x => x.BatchNo, birdInventory.BatchNo)
+                    .SetProperty(x => x.Date, birdInventory.Date)
+                    .SetProperty(x => x.BatchId, birdInventory.BatchId)
                     .SetProperty(x => x.BoxCount, birdInventory.BoxCount)
                     .SetProperty(x => x.BirdsPerBoxCount, birdInventory.BirdsPerBoxCount)
                     .SetProperty(x => x.TotalBirdCount, birdInventory.TotalBirdCount)
