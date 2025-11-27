@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyProject.AppDbContextNameSpace;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyProject.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123180940_v3")]
+    partial class v3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -282,7 +285,7 @@ namespace MyProject.Migrations
                     b.Property<int>("SrNo")
                         .HasColumnType("integer");
 
-                    b.Property<int>("StockOutMasterId")
+                    b.Property<int>("StockOutId")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("Weight")
@@ -290,7 +293,7 @@ namespace MyProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StockOutMasterId");
+                    b.HasIndex("StockOutId");
 
                     b.ToTable("tbl_stockOutEntry", (string)null);
                 });
@@ -376,7 +379,7 @@ namespace MyProject.Migrations
                 {
                     b.HasOne("MyProject.Models.StockOutMaster", "StockOut")
                         .WithMany("Entries")
-                        .HasForeignKey("StockOutMasterId")
+                        .HasForeignKey("StockOutId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

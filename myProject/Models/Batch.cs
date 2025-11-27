@@ -17,6 +17,7 @@
         public BirdInventory? BirdInventory { get; set; }
         public ICollection<DailyRecord>? DailyRecords { get; set; }
         public ICollection<FeedInventory>? FeedInventories { get; set; }
+        public ICollection<StockOutMaster> StockOuts { get; set; }  
         public bool IsDeleted { get; set; } = false;
     }
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyProject.AppDbContextNameSpace;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyProject.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123142637_v2")]
+    partial class v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -268,66 +271,6 @@ namespace MyProject.Migrations
                     b.ToTable("tbl_finalReport", (string)null);
                 });
 
-            modelBuilder.Entity("MyProject.Models.StockOutEntry", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Birds")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SrNo")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StockOutMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("Weight")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StockOutMasterId");
-
-                    b.ToTable("tbl_stockOutEntry", (string)null);
-                });
-
-            modelBuilder.Entity("MyProject.Models.StockOutMaster", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("AvgWeight")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("BatchId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("StockOutNo")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalBirds")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("TotalWeight")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BatchId");
-
-                    b.ToTable("tbl_stockOut", (string)null);
-                });
-
             modelBuilder.Entity("MyProject.Models.BirdInventory", b =>
                 {
                     b.HasOne("MyProject.Models.Batch", "Batch")
@@ -372,28 +315,6 @@ namespace MyProject.Migrations
                     b.Navigation("Batch");
                 });
 
-            modelBuilder.Entity("MyProject.Models.StockOutEntry", b =>
-                {
-                    b.HasOne("MyProject.Models.StockOutMaster", "StockOut")
-                        .WithMany("Entries")
-                        .HasForeignKey("StockOutMasterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StockOut");
-                });
-
-            modelBuilder.Entity("MyProject.Models.StockOutMaster", b =>
-                {
-                    b.HasOne("MyProject.Models.Batch", "Batch")
-                        .WithMany("StockOuts")
-                        .HasForeignKey("BatchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Batch");
-                });
-
             modelBuilder.Entity("MyProject.Models.Batch", b =>
                 {
                     b.Navigation("BirdInventory");
@@ -401,13 +322,6 @@ namespace MyProject.Migrations
                     b.Navigation("DailyRecords");
 
                     b.Navigation("FeedInventories");
-
-                    b.Navigation("StockOuts");
-                });
-
-            modelBuilder.Entity("MyProject.Models.StockOutMaster", b =>
-                {
-                    b.Navigation("Entries");
                 });
 #pragma warning restore 612, 618
         }

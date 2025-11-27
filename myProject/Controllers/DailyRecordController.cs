@@ -76,7 +76,7 @@ namespace MyProject.Controllers
                 return BadRequest(new
                 {
                     Message = "Mortality count can't be greater than ttotal birds.",
-                    birdBalance = birdBalance
+                    birdBalance
                 });
             }
 
