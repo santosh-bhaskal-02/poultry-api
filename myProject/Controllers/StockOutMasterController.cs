@@ -18,6 +18,47 @@ namespace MyProject.Controllers
             _db = db;
         }
 
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var batchId = _db.Batch
+             .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
+             .Select(x => x.Id)
+             .FirstOrDefault();
+
+            if (batchId == 0)
+                return Ok(new { Message = "No active batch found.", Data = new List<DailyRecord>() });
+
+
+            var records = _db.StockOutMaster
+                 .AsNoTracking()
+                .Where(x => x.BatchId == batchId && x.IsDeleted == false)
+                //.OrderByDescending(x => x.Date)
+                .ToList();
+
+            return Ok(new { Message = "Stock Out masters fetched successfully", Data = records });
+        }
+   
+
+        [HttpGet("{masterId}")]
+        public IActionResult GetById(int masterId)
+        {
+            //Console.WriteLine("masterID"+ masterId);
+            var records = _db.StockOutMaster
+                 .AsNoTracking()
+                 .Include(m=>m.Entries)
+                .Where(x => x.Id == masterId && x.IsDeleted == false)
+                .FirstOrDefault();
+
+            //var entries = _db.StockOutEntries
+            //    .Where(e => e.StockOutMasterId == masterId)
+            //    .OrderBy(e => e.SrNo)
+            //    .ToList();
+
+            return Ok(new { Message = "Stock Out masters fetched successfully", Data = records  });
+        }
+
         // CREATE MASTER
         [HttpPost]
         public IActionResult CreateMaster()

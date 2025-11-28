@@ -57,10 +57,41 @@ namespace MyProject.Controllers
             return Ok(new {message ="Previous Entries Fetched Successfully", entries });
         }
 
+
+        //[HttpPut("{id}")]
+        [HttpPut("{id}")]
+        public IActionResult EditEntry(int id, [FromBody] UpdateStockOutEntryRequest dto)
+        {
+            Console.WriteLine("id", id);
+            if (dto == null)
+                return BadRequest(new { message = "Invalid request body" });
+
+            var entry = _db.StockOutEntries.FirstOrDefault(x => x.Id == id);
+
+            if (entry == null)
+                return NotFound(new { message = "Entry not found" });
+
+            entry.SrNo = dto.SrNo;
+            entry.Weight = dto.Weight;
+            entry.Birds = dto.Birds;
+            entry.Weight = dto.Weight;
+
+            _db.StockOutEntries.Update(entry);
+            _db.SaveChanges();
+
+            return Ok(new
+            {
+                message = "Entry updated successfully",
+                updatedEntry = entry
+            });
+        }
+
+
         // DELETE ENTRY
         [HttpDelete("{id}")]
         public IActionResult DeleteEntry(int id)
         {
+            Console.WriteLine("id"+ id);
             var entry = _db.StockOutEntries.Find(id);
             if (entry == null)
                 return NotFound();

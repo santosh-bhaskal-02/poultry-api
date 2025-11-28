@@ -16,5 +16,6 @@
         public decimal AvgWeight { get; set; }
 
         public ICollection<StockOutEntry> Entries { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }

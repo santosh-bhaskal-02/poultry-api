@@ -42,5 +42,6 @@
         public decimal AvgWeight { get; set; }
     }
 
-  
+
+
 }
