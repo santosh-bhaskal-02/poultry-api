@@ -26,15 +26,27 @@ namespace MyProject.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var batchId = _dbContext.Batch
-                .Where(x => !x.IsDeleted && x.Status == BatchStatus.Ongoing)
-                .Select(x => x.Id)
-                .FirstOrDefault();
+            //var batchId = _dbContext.Batch
+            //    .Where(x => !x.IsDeleted && x.Status == BatchStatus.Ongoing)
+            //    .Select(x => x.Id)
+            //    .FirstOrDefault();
 
             var report = _dbContext.FinalReport
-                .Where(x => !x.IsDeleted && x.BatchId == batchId)
+                .Where(x => !x.IsDeleted)
                 .OrderByDescending(x => x.StartDate)
                 .ToList();
+
+            return Ok(new { Message = "Final reports fetched successfully", data = report });
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetReportById(int id)
+        {
+
+            var report = _dbContext.FinalReport
+                .Where(x => !x.IsDeleted && x.Id == id)
+                .OrderByDescending(x => x.StartDate)
+                 .FirstOrDefault();
 
             return Ok(new { Message = "Final reports fetched successfully", data = report });
         }
