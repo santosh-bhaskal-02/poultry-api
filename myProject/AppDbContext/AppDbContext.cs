@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyProject.Models;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 
 namespace MyProject.AppDbContextNameSpace
 {
