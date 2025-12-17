@@ -59,11 +59,9 @@ namespace MyProject.Controllers
             return Ok(new { Message = "Stock Out masters fetched successfully", Data = records  });
         }
 
-        // CREATE MASTER
         [HttpPost]
         public IActionResult CreateMaster()
         {
-            // Find active batch
             var batchId = _db.Batch
                              .Where(x => x.IsDeleted == false && x.Status == BatchStatus.Ongoing)
                              .Select(x => x.Id)
@@ -72,13 +70,11 @@ namespace MyProject.Controllers
             if (batchId == 0)
                 return BadRequest(new { Message = "No active batch found." });
 
-            // Auto-increment StockOutNo
             int nextStockOutNo = _db.StockOutMaster
                                     .OrderByDescending(x => x.StockOutNo)
                                     .Select(x => x.StockOutNo)
                                     .FirstOrDefault() + 1;
 
-            // Create Master record
             var master = new StockOutMaster
             {
                 Date = DateTime.UtcNow,
@@ -96,7 +92,6 @@ namespace MyProject.Controllers
         }
 
 
-        // FINALIZE SUMMARY
         [HttpPut("finalize/{id}")]
         public IActionResult FinalizeMaster(int id, [FromBody] StockOutMasterFinalizeDto dto)
         {

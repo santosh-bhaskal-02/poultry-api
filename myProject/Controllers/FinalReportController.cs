@@ -22,7 +22,6 @@ namespace MyProject.Controllers
             _dbContext = dbContext;
         }
 
-        // ----------------------- GET ALL -----------------------
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -51,7 +50,6 @@ namespace MyProject.Controllers
             return Ok(new { Message = "Final reports fetched successfully", data = report });
         }
 
-        // ----------------------- CREATE -----------------------
         [HttpPost]
         public IActionResult Create([FromBody] FinalReportRequest req)
         {
@@ -106,14 +104,13 @@ namespace MyProject.Controllers
 
             _logger.LogInformation("Final report created for batch {BatchId}", batchId);
 
-            return Ok(new
+            return StatusCode(201, new
             {
                 Message = "Final report created successfully.",
                 Data = record
             });
         }
 
-        // ----------------------- UPDATE -----------------------
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] FinalReport req)
         {
@@ -154,7 +151,6 @@ namespace MyProject.Controllers
             return Ok(new { Message = "Final report updated successfully." });
         }
 
-        // ----------------------- SOFT DELETE -----------------------
         [HttpPatch("soft-delete/{id}")]
         public IActionResult SoftDelete(int id)
         {
@@ -171,7 +167,6 @@ namespace MyProject.Controllers
             return Ok(new { Message = "Record soft deleted successfully." });
         }
 
-        // ----------------------- DELETE -----------------------
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {

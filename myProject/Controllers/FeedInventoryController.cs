@@ -12,11 +12,9 @@ namespace MyProject.Controllers
     public class FeedInventoryController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
-        private readonly ILogger<FeedInventoryController> _logger;
 
         public FeedInventoryController(ILogger<FeedInventoryController> logger, AppDbContext dbContext)
         {
-            _logger = logger;
             _dbContext = dbContext;
         }
 
@@ -68,7 +66,6 @@ namespace MyProject.Controllers
             _dbContext.FeedInventory.Add(record);
             _dbContext.SaveChanges();
 
-            _logger.LogInformation("Feed inventory record created successfully for batch {BatchId}", batchId);
 
 
             return Ok(new
@@ -100,8 +97,6 @@ namespace MyProject.Controllers
             if (updatedCount == 0)
                 return NotFound(new { Message = "Record not found or already deleted." });
 
-            _logger.LogInformation("Feed inventory record with ID {Id} updated successfully", id);
-
             return Ok(new { Message = "Feed inventory record updated successfully." });
         }
 
@@ -117,8 +112,6 @@ namespace MyProject.Controllers
 
             if (updatedCount == 0)
                 return NotFound(new { Message = "Record not found or already deleted." });
-
-            _logger.LogWarning("Feed inventory record with ID {Id} was soft-deleted", id);
 
             return Ok(new
             {
@@ -139,8 +132,6 @@ namespace MyProject.Controllers
 
             if (deletedCount == 0)
                 return NotFound(new { Message = "Record not found." });
-
-            _logger.LogWarning("Feed inventory record with ID {Id} was permanently deleted", id);
 
             return Ok(new
             {

@@ -13,7 +13,6 @@ namespace MyProject.Controllers
 
         public BatchController(AppDbContext db) => _db = db;
 
-        // CREATE NEW BATCH
         [HttpPost]
         public IActionResult Create([FromBody] Batch batch)
         {
@@ -31,7 +30,6 @@ namespace MyProject.Controllers
             return Ok(new { message = "Batch created", data = batch });
         }
 
-        // GET ACTIVE BATCH
         [HttpGet("active")]
         public IActionResult GetActiveBatch()
         {
@@ -42,7 +40,6 @@ namespace MyProject.Controllers
             return Ok(batch);
         }
 
-        // CLOSE BATCH
         [HttpPatch("close/{batchId}")]
         public IActionResult CloseBatch(int batchId)
         {
@@ -57,11 +54,9 @@ namespace MyProject.Controllers
             batch.EndDate = DateTime.UtcNow;
 
             _db.SaveChanges();
-
             return Ok("Batch closed successfully.");
         }
 
-        // GET ALL BATCHES
         [HttpGet]
         public IActionResult GetAll()
         {

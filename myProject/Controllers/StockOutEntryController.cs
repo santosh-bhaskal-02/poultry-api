@@ -17,7 +17,6 @@ namespace MyProject.Controllers
             _db = db;
         }
 
-        // ADD ENTRY
         [HttpPost]
         public IActionResult AddEntry([FromBody] StockOutEntryCreateDto dto)
         {
@@ -45,7 +44,6 @@ namespace MyProject.Controllers
         }
 
 
-        // GET ENTRIES
         [HttpGet("{masterId}")]
         public IActionResult GetEntries(int masterId)
         {
@@ -58,7 +56,6 @@ namespace MyProject.Controllers
         }
 
 
-        //[HttpPut("{id}")]
         [HttpPut("{id}")]
         public IActionResult EditEntry(int id, [FromBody] UpdateStockOutEntryRequest dto)
         {
@@ -87,7 +84,6 @@ namespace MyProject.Controllers
         }
 
 
-        // DELETE ENTRY
         [HttpDelete("{id}")]
         public IActionResult DeleteEntry(int id)
         {
