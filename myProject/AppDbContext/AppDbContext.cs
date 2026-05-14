@@ -13,8 +13,8 @@ namespace MyProject.AppDbContextNameSpace
         public DbSet<DailyRecord> DailyRecord { get; set; }
         public DbSet<FeedInventory> FeedInventory { get; set; }
         public DbSet<FinalReport> FinalReport { get; set; }
+        public DbSet<User> User { get; set; }
 
-        // NEW tables
         public DbSet<StockOutMaster> StockOutMaster { get; set; }
         public DbSet<StockOutEntry> StockOutEntries { get; set; }
 
@@ -29,6 +29,8 @@ namespace MyProject.AppDbContextNameSpace
 
             modelBuilder.Entity<StockOutMaster>().ToTable("tbl_stockOut");
             modelBuilder.Entity<StockOutEntry>().ToTable("tbl_stockOutEntry");
+            modelBuilder.Entity<User>().ToTable("tbl_user");
+
 
             // ----------- FINAL REPORT -------------
             modelBuilder.Entity<FinalReport>()
@@ -72,6 +74,14 @@ namespace MyProject.AppDbContextNameSpace
                 .HasOne(e => e.StockOut)
                 .WithMany(m => m.Entries)
                 .HasForeignKey(e => e.StockOutMasterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            modelBuilder.Entity<Batch>()
+
+                .HasOne(b => b.User)
+                .WithMany(u => u.Batches)
+                .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
 

@@ -9,14 +9,17 @@ namespace MyProject.Controllers
     [ApiController]
     public class BatchController : ControllerBase
     {
-        private readonly AppDbContext _db;
+        private readonly AppDbContext _dbContext;
 
-        public BatchController(AppDbContext db) => _db = db;
+        public BatchController(AppDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
 
         [HttpPost]
         public IActionResult Create([FromBody] Batch batch)
         {
-            bool exists = _db.Batch.Any(b => b.Status == BatchStatus.Ongoing);
+            bool exists = _dbContext.Batch.Any(b => b.Status == BatchStatus.Ongoing);
 
             if (exists)
                 return BadRequest("Another batch is already active. Close it before adding a new batch.");
@@ -24,8 +27,8 @@ namespace MyProject.Controllers
             batch.StartDate = DateTime.UtcNow;
             batch.Status = BatchStatus.Ongoing;
 
-            _db.Batch.Add(batch);
-            _db.SaveChanges();
+            _dbContext.Batch.Add(batch);
+            _dbContext.SaveChanges();
 
             return Ok(new { message = "Batch created", data = batch });
         }
@@ -33,7 +36,7 @@ namespace MyProject.Controllers
         [HttpGet("active")]
         public IActionResult GetActiveBatch()
         {
-            var batch = _db.Batch.FirstOrDefault(x => x.Status == BatchStatus.Ongoing);
+            var batch = _dbContext.Batch.FirstOrDefault(x => x.Status == BatchStatus.Ongoing);
             if (batch == null)
                 return NotFound("No active batch found.");
 
@@ -43,7 +46,7 @@ namespace MyProject.Controllers
         [HttpPatch("close/{batchId}")]
         public IActionResult CloseBatch(int batchId)
         {
-            var batch = _db.Batch.Find(batchId);
+            var batch = _dbContext.Batch.Find(batchId);
             if (batch == null)
                 return NotFound("Batch not found.");
 
@@ -53,14 +56,14 @@ namespace MyProject.Controllers
             batch.Status = BatchStatus.Completed;
             batch.EndDate = DateTime.UtcNow;
 
-            _db.SaveChanges();
+            _dbContext.SaveChanges();
             return Ok("Batch closed successfully.");
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var batches = _db.Batch
+            var batches = _dbContext.Batch
                 .Include(b => b.BirdInventory)
                 .Include(b => b.FeedInventories)
                 .Include(b => b.DailyRecords)
